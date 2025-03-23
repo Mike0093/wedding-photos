@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nasze Wesele - Galeria zdjęć</title>
+    <style>
+        /* Tutaj wklej cały CSS z Twojego pliku index_2.html */
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <!-- Sekcja główna z tłem -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Anna & Michał</h1>
+            <p>Dziękujemy, że byliście częścią naszego wyjątkowego dnia!<br>Pomóżcie nam zachować wspomnienia, dzieląc się swoimi zdjęciami.</p>
+            <a href="#upload" class="btn">Dodaj zdjęcia</a>
+        </div>
+    </section>
+
+    <!-- Sekcja dodawania zdjęć -->
+    <section id="upload" class="upload-section">
+        <div class="container">
+            <h2>Dodaj swoje zdjęcia</h2>
+            <p>Prosimy o podzielenie się z nami Waszymi wspomnieniami z naszego wesela.<br>Wybierz zdjęcia bezpośrednio z Twojego urządzenia.</p>
+            
+            <div class="upload-form">
+                <div class="upload-name-email">
+                    <input type="text" id="guest-name" placeholder="Twoje imię i nazwisko" required>
+                    <input type="email" id="guest-email" placeholder="Twój email (opcjonalnie)">
+                </div>
+                
+                <div class="file-input-wrapper">
+                    <label for="file-upload" class="file-label">
+                        <i class="fas fa-cloud-upload-alt"></i> Wybierz zdjęcia
+                    </label>
+                    <input type="file" id="file-upload" class="file-input" multiple accept="image/*">
+                </div>
+                
+                <div id="file-list">
+                    <p>Brak wybranych plików</p>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="upload-progress"></div>
+                </div>
+                
+                <div class="upload-status" id="status-message">Gotowy do przesyłania</div>
+                
+                <div class="success-message" id="success-message">
+                    Zdjęcia zostały pomyślnie przesłane! Dziękujemy za udostępnienie wspomnień!
+                </div>
+                
+                <button id="upload-button" class="btn">
+                    <i class="fas fa-paper-plane"></i> Prześlij zdjęcia
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sekcja informacyjna -->
+    <section class="info-section">
+        <div class="container">
+            <h2>Informacje</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Miejsce</h3>
+                    <p>Hotel Magnolia<br>ul. Weselna 123<br>00-000 Warszawa</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>Data</h3>
+                    <p>23 maja 2025<br>Godz. 17:00</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Kontakt</h3>
+                    <p>email@przyklad.pl<br>+48 123 456 789</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stopka -->
+    <footer>
+        <div class="container">
+            <p>Anna & Michał © 2025 - Dziękujemy za wspólne świętowanie!</p>
+        </div>
+    </footer>
+
+    <script>
+        // Obsługa przesyłania plików
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileUpload = document.getElementById('file-upload');
+            const fileList = document.getElementById('file-list');
+            const uploadButton = document.getElementById('upload-button');
+            const progressBar = document.getElementById('upload-progress');
+            const statusMessage = document.getElementById('status-message');
+            const successMessage = document.getElementById('success-message');
+            const guestName = document.getElementById('guest-name');
+            const guestEmail = document.getElementById('guest-email');
+            
+            let selectedFiles = [];
+            
+            // Obsługa wyboru plików
+            fileUpload.addEventListener('change', function(e) {
+                const files = e.target.files;
+                
+                if (files.length === 0) return;
+                
+                fileList.innerHTML = '';
+                selectedFiles = Array.from(files);
+                
+                selectedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    // Format rozmiaru pliku
+                    let fileSize = (file.size / 1024).toFixed(1);
+                    const unit = 'KB';
+                    if (fileSize > 1024) {
+                        fileSize = (fileSize / 1024).toFixed(1);
+                        unit = 'MB';
+                    }
+                    
+                    fileItem.innerHTML = `
+                        <div>${file.name} (${fileSize} ${unit})</div>
+                        <span class="remove-file" data-index="${index}">×</span>
+                    `;
+                    
+                    fileList.appendChild(fileItem);
+                });
+                
+                // Obsługa usuwania plików z listy
+                document.querySelectorAll('.remove-file').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        selectedFiles.splice(index, 1);
+                        this.parentElement.remove();
+                        
+                        // Aktualizacja indeksów pozostałych elementów
+                        document.querySelectorAll('.remove-file').forEach((btn, i) => {
+                            btn.setAttribute('data-index', i);
+                        });
+                        
+                        if (selectedFiles.length === 0) {
+                            fileList.innerHTML = '<p>Brak wybranych plików</p>';
+                        }
+                    });
+                });
+            });
+            
+            // Obsługa przesyłania plików
+            uploadButton.addEventListener('click', async function() {
+                if (selectedFiles.length === 0) {
+                    statusMessage.textContent = 'Proszę wybrać pliki do przesłania';
+                    return;
+                }
+                
+                if (!guestName.value.trim()) {
+                    statusMessage.textContent = 'Proszę podać imię i nazwisko';
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('guest-name', guestName.value);
+                formData.append('guest-email', guestEmail.value);
+                selectedFiles.forEach(file => formData.append('photos', file));
+                
+                statusMessage.textContent = 'Przesyłanie plików...';
+                uploadButton.disabled = true;
+                
+                try {
+                    const response = await fetch('/.netlify/functions/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.text();
+                    statusMessage.textContent = result;
+                    successMessage.style.display = 'block';
+                    
+                    // Resetowanie formularza
+                    setTimeout(() => {
+                        fileList.innerHTML = '<p>Brak wybranych plików</p>';
+                        selectedFiles = [];
+                        guestName.value = '';
+                        guestEmail.value = '';
+                        progressBar.style.width = '0%';
+                        statusMessage.textContent = 'Gotowy do przesyłania';
+                        successMessage.style.display = 'none';
+                        uploadButton.disabled = false;
+                    }, 3000);
+                } catch (error) {
+                    console.error(error);
+                    statusMessage.textContent = 'Błąd przy przesyłaniu zdjęć';
+                    uploadButton.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

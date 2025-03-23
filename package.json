@@ -1,0 +1,11 @@
+{
+  "name": "wedding-photos",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "dropbox": "^10.0.0",
+    "multiparty": "^4.2.2"
+  }
+}
