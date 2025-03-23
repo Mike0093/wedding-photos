@@ -19,12 +19,15 @@ exports.handler = async function(event, context) {
             multiples: true,
         });
 
-        // Zamiana body eventu na Buffer
-        const formData = Buffer.from(event.body, 'base64');
-
         // Przetwarzanie formularza
         const { fields, files } = await new Promise((resolve, reject) => {
-            form.parse({ headers: event.headers, body: formData }, (err, fields, files) => {
+            const req = {
+                headers: event.headers,
+                body: Buffer.from(event.body, 'base64')
+            };
+
+            // Użycie form.parse, aby przeanalizować dane
+            form.parse(req, (err, fields, files) => {
                 if (err) {
                     reject(err);
                 } else {
