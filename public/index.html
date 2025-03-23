@@ -61,28 +61,12 @@
       margin-bottom: 30px;
     }
     
-    /* Countdown */
-    .countdown {
-      display: flex;
-      justify-content: center;
+    /* Wedding date */
+    .wedding-date {
       margin: 30px 0;
-    }
-    
-    .countdown div {
-      margin: 0 15px;
-    }
-    
-    .countdown span {
-      display: block;
-    }
-    
-    .countdown .number {
-      font-size: 2.5rem;
+      font-size: 2rem;
       font-weight: bold;
-    }
-    
-    .countdown .label {
-      font-size: 1rem;
+      color: var(--light-color);
     }
     
     /* Upload section */
@@ -298,12 +282,8 @@
         font-size: 2.5rem;
       }
       
-      .countdown {
-        flex-wrap: wrap;
-      }
-      
-      .countdown div {
-        margin: 10px;
+      .wedding-date {
+        font-size: 1.5rem;
       }
       
       .upload-name-email {
@@ -324,24 +304,9 @@
         Dziękujemy, że byliście częścią naszego wyjątkowego dnia!<br>
         Pomóżcie nam zachować wspomnienia, dzieląc się swoimi zdjęciami.
       </p>
-      <!-- Odliczanie do rozpoczęcia ceremonii kościelnej -->
-      <div class="countdown">
-        <div>
-          <span class="number" id="days">00</span>
-          <span class="label">Dni</span>
-        </div>
-        <div>
-          <span class="number" id="hours">00</span>
-          <span class="label">Godzin</span>
-        </div>
-        <div>
-          <span class="number" id="minutes">00</span>
-          <span class="label">Minut</span>
-        </div>
-        <div>
-          <span class="number" id="seconds">00</span>
-          <span class="label">Sekund</span>
-        </div>
+      <!-- Data ślubu zamiast odliczania -->
+      <div class="wedding-date">
+        9 sierpnia 2025
       </div>
       <a href="#upload" class="btn">Dodaj zdjęcia</a>
     </div>
@@ -407,14 +372,6 @@
             41-800 Zabrze
           </p>
         </div>
-        <div class="info-card">
-          <i class="fas fa-envelope"></i>
-          <h3>Kontakt</h3>
-          <p>
-            email@przyklad.pl<br>
-            +48 123 456 789
-          </p>
-        </div>
       </div>
     </div>
   </section>
@@ -427,30 +384,6 @@
   </footer>
 
   <script>
-    // Odliczanie do rozpoczęcia ceremonii kościelnej
-    const weddingDate = new Date("August 9, 2025 14:30:00").getTime();
-    const countdown = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = weddingDate - now;
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      
-      document.getElementById("days").innerHTML = days.toString().padStart(2, "0");
-      document.getElementById("hours").innerHTML = hours.toString().padStart(2, "0");
-      document.getElementById("minutes").innerHTML = minutes.toString().padStart(2, "0");
-      document.getElementById("seconds").innerHTML = seconds.toString().padStart(2, "0");
-      
-      if (distance < 0) {
-        clearInterval(countdown);
-        document.getElementById("days").innerHTML = "00";
-        document.getElementById("hours").innerHTML = "00";
-        document.getElementById("minutes").innerHTML = "00";
-        document.getElementById("seconds").innerHTML = "00";
-      }
-    }, 1000);
-
     // Funkcjonalność przesyłania plików (Dropbox)
     document.addEventListener('DOMContentLoaded', () => {
       const fileUpload = document.getElementById('file-upload');
