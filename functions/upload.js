@@ -38,8 +38,9 @@ exports.handler = async function(event, context) {
             const fileName = `${guestName}_${file.originalFilename}`; // Dodanie imienia i nazwiska do nazwy pliku
             console.log("Przesyłanie pliku:", fileName); // Log 7
 
+            // Zaktualizowana ścieżka: /aplikacje/wesele_kasia_michal/
             await dbx.filesUpload({
-                path: `/wesele/${fileName}`,
+                path: `/aplikacje/wesele_kasia_michal/${fileName}`,
                 contents: content
             });
             console.log("Plik przesłany:", fileName); // Log 8
