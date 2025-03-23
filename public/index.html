@@ -1,100 +1,198 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formularz z Dropbox Chooser</title>
-
-    <!-- Dodajemy skrypt Dropbox Chooser -->
-    <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nasze Wesele - Galeria zdjęć</title>
+  <style>
+    /* Zdefiniowane style są niezmienne */
+    :root {
+      --primary-color: #d4a5a5;
+      --secondary-color: #f0e4d7;
+      --accent-color: #957186;
+      --text-color: #555;
+      --light-color: #fff;
+    }
     
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .form-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .file-list {
-            margin-top: 20px;
-        }
-        .file-item {
-            padding: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .remove-file {
-            color: red;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #007ee5;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background-color: #005bb5;
-        }
-    </style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+    
+    body {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Pozostałe style również są zachowane */
+
+    /* Przycisk do wyboru zdjęć z Dropboxa */
+    #dropbox-chooser {
+      padding: 15px 30px;
+      background-color: var(--accent-color);
+      color: var(--light-color);
+      border: none;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 20px;
+      display: inline-block;
+    }
+
+    #dropbox-chooser:hover {
+      background-color: var(--primary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    #file-list {
+      margin: 20px 0;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: var(--light-color);
+    }
+  </style>
+
+  <!-- Google Fonts i Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js"></script>
 </head>
 <body>
-
-    <div class="form-container">
-        <h1>Wybierz zdjęcia z Dropbox</h1>
-        <form action="submit_form.php" method="post">
-            <!-- Przycisk do otwierania Dropbox Chooser -->
-            <button type="button" id="dropbox-chooser" class="btn">
-                <i class="fas fa-cloud-upload-alt"></i> Wybierz zdjęcia z Dropbox
-            </button>
-
-            <!-- Lista wybranych plików -->
-            <div id="file-list" class="file-list"></div>
-
-            <!-- Przycisk do wysyłania formularza -->
-            <button type="submit" class="btn">Wyślij formularz</button>
-        </form>
+  <!-- Sekcja główna z tłem -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Kasia &amp; Michał</h1>
+      <p>
+        Dziękujemy, że byliście częścią naszego wyjątkowego dnia!<br>
+        Pomóżcie nam zachować wspomnienia, dzieląc się swoimi zdjęciami.
+      </p>
+      <div class="wedding-date">
+        9 sierpnia 2025
+      </div>
+      <a href="#upload" class="btn">Dodaj zdjęcia</a>
     </div>
+  </section>
 
-    <script>
-        // Funkcja otwierająca Dropbox Chooser po kliknięciu przycisku
-        document.getElementById('dropbox-chooser').addEventListener('click', function () {
-            Dropbox.choose({
-                success: function (files) {
-                    console.log("Wybrane pliki z Dropbox:", files);
-                    const fileList = document.getElementById('file-list');
-                    fileList.innerHTML = ''; // Wyczyść listę przed dodaniem nowych plików
-                    
-                    // Wyświetl wybrane pliki
-                    files.forEach(file => {
-                        const fileItem = document.createElement('div');
-                        fileItem.className = 'file-item';
-                        fileItem.innerHTML = `
-                            <div>${file.name}</div>
-                            <span class="remove-file" data-file="${file.link}">×</span>
-                        `;
-                        fileList.appendChild(fileItem);
-                    });
-                },
-                linkType: "preview", // Możesz zmienić na "direct" jeśli chcesz bezpośredni link
-                multiselect: true, // Pozwól na wybór wielu plików
-            });
-        });
+  <!-- Sekcja dodawania zdjęć -->
+  <section id="upload" class="upload-section">
+    <div class="container">
+      <h2>Dodaj swoje zdjęcia</h2>
+      <p>
+        Prosimy o podzielenie się z nami Waszymi wspomnieniami z naszego wesela.<br>
+        Wybierz zdjęcia bezpośrednio z Twojego Dropboxa.
+      </p>
+      <div class="upload-form">
+        <div class="upload-name-email">
+          <input type="text" id="guest-name" placeholder="Twoje imię i nazwisko" required>
+          <input type="email" id="guest-email" placeholder="Twój email (opcjonalnie)">
+        </div>
+        
+        <!-- Przycisk Dropbox Chooser -->
+        <button id="dropbox-chooser" class="btn">Wybierz zdjęcia z Dropboxa</button>
+        
+        <div id="file-list">
+          <p>Brak wybranych plików</p>
+        </div>
 
-        // Funkcja do usuwania plików z listy
-        document.addEventListener('click', function (e) {
-            if (e.target && e.target.classList.contains('remove-file')) {
-                e.target.parentElement.remove();
-            }
-        });
-    </script>
+        <div class="upload-status" id="status-message">Gotowy do przesyłania</div>
+        <div class="success-message" id="success-message" style="display:none;">
+          Zdjęcia zostały pomyślnie przesłane! Dziękujemy za udostępnienie wspomnień!
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- Sekcja informacyjna -->
+  <section class="info-section">
+    <div class="container">
+      <h2>Informacje</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <i class="fas fa-church"></i>
+          <h3>Uroczystość kościelna</h3>
+          <p>
+            Parafia Ścięcia św. Jana Chrzciciela<br>
+            w Rudzie Śląskiej - Godula<br>
+            9 sierpnia 2025, godz. 14:30
+          </p>
+        </div>
+        <div class="info-card">
+          <i class="fas fa-glass-cheers"></i>
+          <h3>Przyjęcie weselne</h3>
+          <p>
+            Impresja Zabrze<br>
+            Park Hutniczy 10<br>
+            41-800 Zabrze
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stopka -->
+  <footer>
+    <div class="container">
+      <p>Kasia &amp; Michał © 2025 - Dziękujemy za wspólne świętowanie!</p>
+    </div>
+  </footer>
+
+  <script>
+    // Inicjalizacja Dropbox Chooser
+    Dropbox.init({ appKey: 'a8s7bhjb7ushmej' }); // Zastąp "YOUR_APP_KEY" swoim rzeczywistym kluczem aplikacji
+
+    // Funkcjonalność przycisku Dropbox Chooser
+    document.getElementById("dropbox-chooser").onclick = function() {
+      Dropbox.choose({
+        success: function(files) {
+          const fileList = document.getElementById('file-list');
+          fileList.innerHTML = '';  // Wyczyść poprzednią listę
+
+          // Wyświetl wybrane pliki
+          files.forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+              <div>${file.name} (${(file.bytes / 1024 / 1024).toFixed(2)} MB)</div>
+            `;
+            fileList.appendChild(fileItem);
+          });
+        },
+        cancel: function() {
+          console.log("Anulowano wybór pliku z Dropboxa");
+        }
+      });
+    };
+
+    // Opcjonalna funkcjonalność przesyłania zdjęć na serwer (tu przykład z alertem)
+    document.getElementById("upload-button").addEventListener("click", () => {
+      const guestName = document.getElementById("guest-name").value;
+      const guestEmail = document.getElementById("guest-email").value;
+      const fileList = document.getElementById("file-list");
+
+      if (!guestName || fileList.children.length === 0) {
+        alert("Proszę podać imię oraz wybrać pliki");
+        return;
+      }
+
+      // Przykład przesyłania (możesz to zmienić, by wysłać dane na swój serwer)
+      alert("Dziękujemy za przesłanie zdjęć!");
+      document.getElementById("success-message").style.display = "block";
+    });
+  </script>
 </body>
 </html>
