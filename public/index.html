@@ -120,11 +120,11 @@
                     
                     // Format rozmiaru pliku
                     let fileSize = (file.size / 1024).toFixed(1);
-                    const unit = 'KB';
-                    if (fileSize > 1024) {
-                        fileSize = (fileSize / 1024).toFixed(1);
-                        unit = 'MB';
-                    }
+					let unit = 'KB'; // Zmieniamy z const na let
+					if (fileSize > 1024) {
+						fileSize = (fileSize / 1024).toFixed(1);
+						unit = 'MB'; // Teraz działa
+					}
                     
                     fileItem.innerHTML = `
                         <div>${file.name} (${fileSize} ${unit})</div>
