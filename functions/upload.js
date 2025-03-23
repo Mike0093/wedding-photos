@@ -17,22 +17,20 @@ exports.handler = async function(event, context) {
       uploadDir: tempDir,
       keepExtensions: true,
       multiples: true,
+      maxFileSize: 50 * 1024 * 1024, // 50MB – zwiększony limit pliku
     });
 
-    // Konwersja event.body z base64 na Buffer
+    // Przekształcenie event.body (base64) na Buffer
     const bodyBuffer = Buffer.from(event.body, 'base64');
-
     // Konwersja bufora na strumień przy użyciu streamifier
     const reqStream = streamifier.createReadStream(bodyBuffer);
-    // Dodanie nagłówków do strumienia (wymagane przez formidable)
+    // Dodanie nagłówków, których oczekuje formidable
     reqStream.headers = event.headers;
 
     // Parsowanie danych formularza
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(reqStream, (err, fields, files) => {
-        if (err) {
-          return reject(err);
-        }
+        if (err) return reject(err);
         resolve({ fields, files });
       });
     });
@@ -41,22 +39,16 @@ exports.handler = async function(event, context) {
     console.log("Dropbox zainicjowany");
 
     const guestName = fields['guest-name'].replace(/ /g, '_');
-    // guestEmail jest tu nieużywany, ale można go ewentualnie wykorzystać
-    const guestEmail = fields['guest-email'];
-
-    // Przesyłanie plików do Dropbox
     const uploadPromises = Object.values(files).map(async (fileObj) => {
       const fileName = `${guestName}_${fileObj.originalFilename}`;
       console.log("Przesyłanie pliku:", fileName);
 
       const fileContent = fs.readFileSync(fileObj.filepath);
-
       await dbx.filesUpload({
         path: `/aplikacje/wesele_kasia_michal/${fileName}`,
-        contents: fileContent
+        contents: fileContent,
       });
 
-      // Usunięcie tymczasowego pliku
       fs.unlinkSync(fileObj.filepath);
       console.log("Plik przesłany:", fileName);
     });
@@ -66,13 +58,13 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
-      body: 'Zdjęcia przesłane! Dziękujemy!'
+      body: 'Zdjęcia przesłane! Dziękujemy!',
     };
   } catch (err) {
     console.error("Błąd podczas przesyłania plików:", err);
     return {
       statusCode: 500,
-      body: 'Błąd przy przesyłaniu zdjęć: ' + err.message
+      body: 'Błąd przy przesyłaniu zdjęć: ' + err.message,
     };
   }
 };
