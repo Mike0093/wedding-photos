@@ -53,4 +53,21 @@ exports.handler = async function(event, context) {
 
             // Usunięcie tymczasowego pliku
             fs.unlinkSync(fileObj.filepath);
-            console.log("Plik przesłany:", fileName
+            console.log("Plik przesłany:", fileName);
+        });
+
+        await Promise.all(uploadPromises);
+        console.log("Wszystkie pliki przesłane pomyślnie");
+
+        return {
+            statusCode: 200,
+            body: 'Zdjęcia przesłane! Dziękujemy!'
+        };
+    } catch (err) {
+        console.error("Błąd podczas przesyłania plików:", err);
+        return {
+            statusCode: 500,
+            body: 'Błąd przy przesyłaniu zdjęć: ' + err.message
+        };
+    }
+};
