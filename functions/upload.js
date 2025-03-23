@@ -1,56 +1,82 @@
+const { Dropbox } = require('dropbox');
 const formidable = require('formidable');
 const fs = require('fs');
-const fetch = require('node-fetch');
 
-exports.handler = async (event, context) => {
-  const form = new formidable.IncomingForm({
-    uploadDir: '/tmp',
-    keepExtensions: true,
-    multiples: true,
-    maxFileSize: 50 * 1024 * 1024, // 50MB
-  });
+exports.handler = async function(event, context) {
+    console.log("Funkcja została wywołana");
 
-  return new Promise((resolve, reject) => {
-    form.parse(event, async (err, fields, files) => {
-      if (err) {
-        console.error(err);
-        reject({ statusCode: 500, body: 'Błąd przetwarzania plików.' });
-        return;
-      }
+    if (event.httpMethod !== 'POST') {
+        console.log("Nieprawidłowa metoda HTTP");
+        return { statusCode: 405, body: 'Method Not Allowed' };
+    }
 
-      const file = files.files[0];
-      
-      // Upewnij się, że plik jest w formacie binarnym (Buffer)
-      const fileBuffer = fs.readFileSync(file.path);
-      
-      try {
-        // Prześlij plik na Dropbox
-        const response = await fetch('https://content.dropboxapi.com/2/files/upload', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer YOUR_DROPBOX_ACCESS_TOKEN`,
-            'Content-Type': 'application/octet-stream',
-            'Dropbox-API-Arg': JSON.stringify({
-              path: `/uploads/${file.name}`,
-              mode: 'add',
-              autorename: true,
-            }),
-          },
-          body: fileBuffer,
+    try {
+        // Utworzenie tymczasowego pliku ze strumienia danych
+        const tempDir = '/tmp'; // Netlify Functions pozwala na używanie /tmp
+        const form = new formidable.IncomingForm({
+            uploadDir: tempDir,
+            keepExtensions: true,
+            multiples: true,
+            maxFileSize: 50 * 1024 * 1024, // Limity na pliki - do 50MB
         });
 
-        if (!response.ok) {
-          throw new Error('Błąd przesyłania do Dropbox');
-        }
+        // Przetwarzanie formularza
+        const { fields, files } = await new Promise((resolve, reject) => {
+            const fakeReq = {
+                headers: event.headers,
+                body: Buffer.from(event.body, 'base64') // Zmieniamy ciało na Buffer
+            };
 
-        resolve({
-          statusCode: 200,
-          body: 'Plik został pomyślnie przesłany do Dropbox.',
+            form.parse(fakeReq, (err, fields, files) => {
+                if (err) reject(err);
+                resolve({ fields, files });
+            });
         });
-      } catch (error) {
-        console.error(error);
-        reject({ statusCode: 500, body: 'Wystąpił błąd przy przesyłaniu pliku.' });
-      }
-    });
-  });
+
+        console.log("Formularz przetworzony", fields, files);
+
+        const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN });
+        console.log("Dropbox zainicjowany");
+
+        const guestName = fields['guest-name'] ? fields['guest-name'].replace(/ /g, '_') : 'unknown_guest';
+        const guestEmail = fields['guest-email'] || 'brak_emaila';
+
+        // Przesyłanie plików do Dropbox
+        const uploadPromises = Object.values(files).map(async (fileObj) => {
+            const fileName = `${guestName}_${fileObj.originalFilename}`;
+            console.log("Przesyłanie pliku:", fileName);
+
+            try {
+                const fileContent = fs.readFileSync(fileObj.filepath);
+                const response = await dbx.filesUpload({
+                    path: `/aplikacje/wesele_kasia_michal/${fileName}`,
+                    contents: fileContent,
+                });
+
+                console.log("Plik przesłany do Dropbox:", fileName, response);
+                
+                // Usunięcie tymczasowego pliku
+                fs.unlinkSync(fileObj.filepath);
+            } catch (err) {
+                console.error("Błąd przy przesyłaniu pliku:", fileName, err);
+                throw err; // Rzucenie błędu zatrzyma dalsze przesyłanie
+            }
+        });
+
+        // Czekamy na przesłanie wszystkich plików
+        await Promise.all(uploadPromises);
+        console.log("Wszystkie pliki przesłane pomyślnie");
+
+        return {
+            statusCode: 200,
+            body: 'Zdjęcia przesłane! Dziękujemy!'
+        };
+
+    } catch (err) {
+        console.error("Błąd podczas przesyłania plików:", err);
+        return {
+            statusCode: 500,
+            body: 'Błąd przy przesyłaniu zdjęć: ' + err.message
+        };
+    }
 };
