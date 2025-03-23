@@ -1,10 +1,11 @@
 const { Dropbox } = require('dropbox');
 const formidable = require('formidable');
 const fs = require('fs');
+const { Buffer } = require('buffer');
 
 exports.handler = async function(event, context) {
     console.log("Funkcja została wywołana");
-    
+
     if (event.httpMethod !== 'POST') {
         console.log("Nieprawidłowa metoda HTTP");
         return { statusCode: 405, body: 'Method Not Allowed' };
@@ -19,15 +20,16 @@ exports.handler = async function(event, context) {
             multiples: true,
         });
 
+        // Przekształcenie base64 na buffer, aby móc wykorzystać form.parse()
+        const bodyBuffer = Buffer.from(event.body, 'base64');
+        const fakeReq = {
+            headers: event.headers,
+            body: bodyBuffer,
+        };
+
         // Przetwarzanie formularza
         const { fields, files } = await new Promise((resolve, reject) => {
-            const req = {
-                headers: event.headers,
-                body: Buffer.from(event.body, 'base64')
-            };
-
-            // Użycie form.parse, aby przeanalizować dane
-            form.parse(req, (err, fields, files) => {
+            form.parse(fakeReq, (err, fields, files) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -36,6 +38,7 @@ exports.handler = async function(event, context) {
             });
         });
 
+        // Inicjalizacja Dropbox
         const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN });
         console.log("Dropbox zainicjowany");
 
