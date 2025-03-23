@@ -5,6 +5,7 @@
     "start": "netlify dev"
   },
   "dependencies": {
+	"formidable": "^2.0.1",
     "dropbox": "^10.0.0",
     "multiparty": "^4.2.2"
   }
