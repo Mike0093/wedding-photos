@@ -1,5 +1,0 @@
-[build]
-  functions = "functions"
-  publish = "public"
-[functions.binaryMediaTypes]
-"*/*" = true
