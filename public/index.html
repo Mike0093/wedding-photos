@@ -33,7 +33,7 @@
     }
 
     .hero {
-      background-image: url('wedding-bg.jpg');
+      background-image: url('tlo-wesele.jpg');
       background-size: cover;
       background-position: center;
       height: 100vh;
@@ -375,8 +375,14 @@
     </div>
   </footer>
 
-  <script src="config.js"></script>
-  <script>
+<script src="config.js"></script>
+<script>
+    // Dodajmy sprawdzenie, czy token jest dostępny
+    if (!config || !config.dropboxToken) {
+        console.error('Brak tokenu Dropbox! Sprawdź plik config.js');
+        alert('Błąd konfiguracji - skontaktuj się z administratorem strony.');
+    }
+
     // Inicjalizacja Dropbox z tokenem z pliku konfiguracyjnego
     const dbx = new Dropbox.Dropbox({ accessToken: config.dropboxToken });
 
@@ -395,142 +401,152 @@
     // Maksymalna liczba plików
     const MAX_FILES = 20;
 
-    // Obsługa wyboru plików
-    fileInput.addEventListener('change', () => {
-      const files = Array.from(fileInput.files);
-      
-      // Sprawdź limit liczby plików
-      if (files.length > MAX_FILES) {
-        showError(`Możesz wybrać maksymalnie ${MAX_FILES} plików jednocześnie.`);
-        fileInput.value = '';
-        return;
-      }
-
-      // Wyczyść listę
-      fileList.innerHTML = '';
-      
-      files.forEach(file => {
-        // Sprawdź rozmiar pliku
-        if (file.size > MAX_FILE_SIZE) {
-          showError(`Plik ${file.name} jest za duży. Maksymalny rozmiar to 500MB.`);
-          return;
-        }
-
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-          <span>${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-          <span class="remove-file" data-name="${file.name}">
-            <i class="fas fa-times"></i>
-          </span>
-        `;
-        fileList.appendChild(fileItem);
-      });
-
-      // Pokaż komunikat jeśli nie wybrano żadnych plików
-      if (fileList.children.length === 0) {
-        fileList.innerHTML = '<p>Brak wybranych plików</p>';
-      }
-    });
-
-    // Obsługa usuwania pojedynczych plików
-    fileList.addEventListener('click', (e) => {
-      if (e.target.closest('.remove-file')) {
-        const fileName = e.target.closest('.remove-file').dataset.name;
-        const dt = new DataTransfer();
-        const files = Array.from(fileInput.files);
-        
-        files.forEach(file => {
-          if(file.name !== fileName) {
-            dt.items.add(file);
-          }
-        });
-        
-        fileInput.files = dt.files;
-        e.target.closest('.file-item').remove();
-
-        if (fileList.children.length === 0) {
-          fileList.innerHTML = '<p>Brak wybranych plików</p>';
-        }
-      }
-    });
-
     // Funkcja pomocnicza do wyświetlania błędów
     function showError(message) {
-      errorMessage.textContent = message;
-      errorMessage.style.display = 'block';
-      setTimeout(() => {
-        errorMessage.style.display = 'none';
-      }, 5000);
+        console.error('Błąd:', message); // Dodane logowanie do konsoli
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
     }
 
     // Funkcja do aktualizacji paska postępu
     function updateProgress(current, total) {
-      const percent = Math.round((current / total) * 100);
-      progressBar.style.width = `${percent}%`;
-      progressBar.textContent = `${percent}%`;
+        const percent = Math.round((current / total) * 100);
+        progressBar.style.width = `${percent}%`;
+        progressBar.textContent = `${percent}%`;
+        console.log(`Postęp uploadu: ${percent}%`); // Dodane logowanie
     }
+
+    // Obsługa wyboru plików
+    fileInput.addEventListener('change', () => {
+        console.log('Wybrano pliki:', fileInput.files); // Dodane logowanie
+        const files = Array.from(fileInput.files);
+        
+        if (files.length > MAX_FILES) {
+            showError(`Możesz wybrać maksymalnie ${MAX_FILES} plików jednocześnie.`);
+            fileInput.value = '';
+            return;
+        }
+
+        fileList.innerHTML = '';
+        
+        files.forEach(file => {
+            if (file.size > MAX_FILE_SIZE) {
+                showError(`Plik ${file.name} jest za duży. Maksymalny rozmiar to 500MB.`);
+                return;
+            }
+
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <span>${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                <span class="remove-file" data-name="${file.name}">
+                    <i class="fas fa-times"></i>
+                </span>
+            `;
+            fileList.appendChild(fileItem);
+        });
+
+        if (fileList.children.length === 0) {
+            fileList.innerHTML = '<p>Brak wybranych plików</p>';
+        }
+    });
+
+    // Obsługa usuwania pojedynczych plików
+    fileList.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-file')) {
+            const fileName = e.target.closest('.remove-file').dataset.name;
+            const dt = new DataTransfer();
+            const files = Array.from(fileInput.files);
+            
+            files.forEach(file => {
+                if(file.name !== fileName) {
+                    dt.items.add(file);
+                }
+            });
+            
+            fileInput.files = dt.files;
+            e.target.closest('.file-item').remove();
+
+            if (fileList.children.length === 0) {
+                fileList.innerHTML = '<p>Brak wybranych plików</p>';
+            }
+        }
+    });
 
     // Obsługa wysyłania plików
     uploadButton.addEventListener('click', async () => {
-      const files = Array.from(fileInput.files);
-      const guestName = guestNameInput.value.trim();
+        console.log('Rozpoczęto proces uploadu'); // Dodane logowanie
+        const files = Array.from(fileInput.files);
+        const guestName = guestNameInput.value.trim();
 
-      // Walidacja
-      if (!guestName) {
-        showError('Proszę podać imię i nazwisko');
-        return;
-      }
-
-      if (files.length === 0) {
-        showError('Proszę wybrać pliki do wysłania');
-        return;
-      }
-
-      // Przygotowanie do wysyłania
-      uploadButton.disabled = true;
-      progressContainer.style.display = 'block';
-      successMessage.style.display = 'none';
-      errorMessage.style.display = 'none';
-      
-      try {
-        let uploadedFiles = 0;
-
-        for (const file of files) {
-          // Tworzenie bezpiecznej nazwy pliku
-          const safeName = `${Date.now()}_${guestName.replace(/[^a-zA-Z0-9]/g, '_')}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-          
-          // Czytanie pliku
-          const fileBuffer = await file.arrayBuffer();
-          
-          // Upload do Dropbox
-          await dbx.filesUpload({
-            path: `/Wesele/${safeName}`,
-            contents: fileBuffer
-          });
-
-          uploadedFiles++;
-          updateProgress(uploadedFiles, files.length);
+        // Walidacja
+        if (!guestName) {
+            showError('Proszę podać imię i nazwisko');
+            return;
         }
 
-        // Sukces
-        successMessage.style.display = 'block';
-        fileInput.value = '';
-        fileList.innerHTML = '<p>Brak wybranych plików</p>';
-        
-        // Ukryj pasek postępu po 3 sekundach
-        setTimeout(() => {
-          progressContainer.style.display = 'none';
-          progressBar.style.width = '0%';
-        }, 3000);
+        if (files.length === 0) {
+            showError('Proszę wybrać pliki do wysłania');
+            return;
+        }
 
-      } catch (error) {
-        console.error('Błąd:', error);
-        showError('Wystąpił błąd podczas wysyłania plików. Spróbuj ponownie później.');
-      } finally {
-        uploadButton.disabled = false;
-      }
+        // Przygotowanie do wysyłania
+        uploadButton.disabled = true;
+        progressContainer.style.display = 'block';
+        successMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        
+        try {
+            let uploadedFiles = 0;
+
+            for (const file of files) {
+                console.log(`Rozpoczynam upload pliku: ${file.name}`); // Dodane logowanie
+                
+                // Tworzenie bezpiecznej nazwy pliku
+                const safeName = `${Date.now()}_${guestName.replace(/[^a-zA-Z0-9]/g, '_')}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                
+                try {
+                    // Czytanie pliku
+                    const fileBuffer = await file.arrayBuffer();
+                    console.log(`Plik ${file.name} wczytany do pamięci`); // Dodane logowanie
+                    
+                    // Upload do Dropbox
+                    await dbx.filesUpload({
+                        path: `/Wesele/${safeName}`,
+                        contents: fileBuffer,
+                        mode: 'add'
+                    });
+
+                    console.log(`Plik ${file.name} wysłany pomyślnie`); // Dodane logowanie
+                    uploadedFiles++;
+                    updateProgress(uploadedFiles, files.length);
+                } catch (err) {
+                    console.error(`Błąd podczas wysyłania pliku ${file.name}:`, err); // Dodane logowanie
+                    throw err;
+                }
+            }
+
+            // Sukces
+            console.log('Wszystkie pliki zostały wysłane pomyślnie'); // Dodane logowanie
+            successMessage.style.display = 'block';
+            fileInput.value = '';
+            fileList.innerHTML = '<p>Brak wybranych plików</p>';
+            
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            }, 3000);
+
+        } catch (error) {
+            console.error('Błąd podczas uploadu:', error); // Dodane szczegółowe logowanie błędu
+            showError('Wystąpił błąd podczas wysyłania plików. Spróbuj ponownie później.');
+        } finally {
+            uploadButton.disabled = false;
+        }
     });
-  </script>
+</script>
 </body>
 </html>
